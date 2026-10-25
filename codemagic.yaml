@@ -4,7 +4,7 @@
 # One-time setup (all in dashboards, nothing secret goes in this file):
 #  1. App Store Connect > Users and Access > Integrations > App Store Connect API:
 #     create a key with the App Manager role and download the .p8 file.
-#  2. Codemagic > Team settings > Integrations > Developer Portal: add that key
+#  2. Codemagic > Settings > Integrations > Developer Portal: add that key
 #     and name it exactly: nexurls_asc
 #  3. Apple Developer > Identifiers: register the App ID com.nexurls.app with
 #     Push Notifications ticked.

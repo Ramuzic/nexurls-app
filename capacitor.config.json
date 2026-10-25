@@ -5,7 +5,10 @@
   "server": {
     "url": "https://nexurls.com/app/",
     "cleartext": false,
-    "allowNavigation": ["nexurls.com", "*.nexurls.com"]
+    "allowNavigation": [
+      "nexurls.com",
+      "*.nexurls.com"
+    ]
   },
   "appendUserAgent": "NexURLsApp/1.0",
   "backgroundColor": "#F4F0E8",
@@ -24,7 +27,7 @@
     "SplashScreen": {
       "launchShowDuration": 1200,
       "launchAutoHide": true,
-      "backgroundColor": "#121212",
+      "backgroundColor": "#F4F0E8",
       "showSpinner": false,
       "androidScaleType": "CENTER_CROP"
     }

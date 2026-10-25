@@ -5,7 +5,7 @@
   "description": "NexURLs native app shell",
   "scripts": {
     "sync": "npx cap sync",
-    "icons": "npx capacitor-assets generate --iconBackgroundColor '#121212' --iconBackgroundColorDark '#121212' --splashBackgroundColor '#121212' --splashBackgroundColorDark '#121212'"
+    "icons": "npx capacitor-assets generate --iconBackgroundColor '#F4F0E8' --iconBackgroundColorDark '#F4F0E8' --splashBackgroundColor '#F4F0E8' --splashBackgroundColorDark '#F4F0E8'"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.3",
