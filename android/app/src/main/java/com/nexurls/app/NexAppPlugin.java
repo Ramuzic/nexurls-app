@@ -56,6 +56,28 @@ public class NexAppPlugin extends Plugin {
         });
     }
 
+    /** Apple in-app purchases and Sign in with Apple are iPhone only; Android keeps the website checkout. */
+    @PluginMethod
+    public void iapProducts(PluginCall call) { call.reject("Not available on Android"); }
+
+    @PluginMethod
+    public void iapBuy(PluginCall call) { call.reject("Not available on Android"); }
+
+    @PluginMethod
+    public void iapPending(PluginCall call) { JSObject r = new JSObject(); r.put("items", new com.getcapacitor.JSArray()); call.resolve(r); }
+
+    @PluginMethod
+    public void iapRestore(PluginCall call) { JSObject r = new JSObject(); r.put("items", new com.getcapacitor.JSArray()); call.resolve(r); }
+
+    @PluginMethod
+    public void iapFinish(PluginCall call) { call.resolve(); }
+
+    @PluginMethod
+    public void iapManage(PluginCall call) { call.resolve(); }
+
+    @PluginMethod
+    public void appleSignIn(PluginCall call) { call.reject("Not available on Android"); }
+
     /** The site hides the tabs while a website is open full screen: { hidden: true }. */
     @PluginMethod
     public void tabBar(PluginCall call) {

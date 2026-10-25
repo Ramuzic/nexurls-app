@@ -1,0 +1,82 @@
+# App Store screenshots from the iPhone simulator (6.9 inch, 1320 x 2868).
+# Run it from the Actions tab (Screenshots > Run workflow). The pictures are saved
+# into the repository under screenshots/ios-6.9/.
+name: Screenshots
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ios:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install packages and copy the web settings
+        run: |
+          npm ci
+          npx cap sync ios
+
+      - name: Pick the largest iPhone simulator
+        run: |
+          xcrun simctl list devices available
+          UDID=$(xcrun simctl list devices available | grep -E "iPhone 1[6-9] Pro Max" | tail -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+          if [ -z "$UDID" ]; then UDID=$(xcrun simctl list devices available | grep -E "iPhone.*Pro Max" | tail -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/'); fi
+          echo "Using simulator $UDID"
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+
+      - name: Build the app for the simulator
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
+            -sdk iphonesimulator -destination "id=$UDID" -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO build | tail -20
+
+      - name: Take the screenshots
+        run: |
+          APP=build/Build/Products/Debug-iphonesimulator/App.app
+          OUT=screenshots/ios-6.9
+          mkdir -p "$OUT"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time "9:41" --dataNetwork wifi --wifiMode active --wifiBars 3 --cellularMode active --cellularBars 4 --batteryState charged --batteryLevel 100
+
+          fresh() { xcrun simctl uninstall "$UDID" com.nexurls.app || true; xcrun simctl install "$UDID" "$APP"; }
+          shot() {
+            name="$1"; wait="$2"; shift 2
+            xcrun simctl terminate "$UDID" com.nexurls.app || true
+            xcrun simctl launch "$UDID" com.nexurls.app -NexShot "$@"
+            sleep "$wait"
+            xcrun simctl io "$UDID" screenshot "$OUT/$name.png"
+            echo "::notice::Saved $name"
+          }
+
+          # First launch: onboarding.
+          fresh
+          shot 01-onboarding 8 -NexShowOnboarding -NexShowGate
+          # Fresh again: the welcome screen with Join and Sign in.
+          fresh
+          shot 02-welcome 16 -NexShowGate
+          # Everything else without the welcome screen.
+          shot 03-home 16
+          shot 04-next 22 -NexURL "https://nexurls.com/?go=1"
+          shot 05-explore 16 -NexURL "https://nexurls.com/explore/"
+          shot 06-reels 20 -NexURL "https://nexurls.com/reels/"
+          shot 07-community 16 -NexURL "https://nexurls.com/?qcf_feed=1"
+          shot 08-fresh 16 -NexURL "https://nexurls.com/explore/?mode=fresh"
+          ls -la "$OUT"
+
+      - name: Save the screenshots to the repository
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add screenshots
+          git commit -m "App Store screenshots (iPhone 6.9 inch)" || echo "No changes"
+          git push

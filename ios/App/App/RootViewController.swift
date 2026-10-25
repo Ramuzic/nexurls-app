@@ -191,8 +191,24 @@ class RootViewController: UIViewController, UITabBarDelegate {
         updateObscured()
     }
 
+    /// Screenshot mode: -NexShot skips onboarding (unless -NexShowOnboarding),
+    /// -NexURL <address> opens that page once the app has started.
+    private var shotURLDone = false
+    private func screenshotSetup() {
+        let args = ProcessInfo.processInfo.arguments
+        guard args.contains("-NexShot") else { return }
+        if !args.contains("-NexShowOnboarding") { UserDefaults.standard.set(true, forKey: "nexapp_onboarded") }
+        if !shotURLDone, let i = args.firstIndex(of: "-NexURL"), i + 1 < args.count, let u = URL(string: args[i + 1]) {
+            shotURLDone = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                self?.bridgeVC.webView?.load(URLRequest(url: u))
+            }
+        }
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        screenshotSetup()
         if let u = RootViewController.pendingURL {
             RootViewController.pendingURL = nil
             open(u)

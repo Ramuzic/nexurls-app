@@ -1,5 +1,6 @@
 import UIKit
 import Capacitor
+import WebKit
 
 /// Capacitor's web view, set up to sit between the status bar and the native tab bar.
 class AppBridgeViewController: CAPBridgeViewController {
@@ -19,5 +20,13 @@ class AppBridgeViewController: CAPBridgeViewController {
         web.isOpaque = false
         web.backgroundColor = AppConfig.shared.paperColor
         web.scrollView.backgroundColor = AppConfig.shared.paperColor
+
+        // Screenshot mode (launch argument -NexShot, used only by the screenshot
+        // workflow): skip the web welcome screen unless -NexShowGate is also given.
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("-NexShot") && !args.contains("-NexShowGate") {
+            let js = "try{localStorage.setItem('nxsf_gate','1')}catch(e){}"
+            web.configuration.userContentController.addUserScript(WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        }
     }
 }
