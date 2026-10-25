@@ -36,9 +36,22 @@ public class NexAppPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
+    /// A tap you can feel. { style: "light" (default), "medium", "heavy", "soft", "rigid",
+    /// "selection", "success", "warning" or "error" }.
     @objc public func haptic(_ call: CAPPluginCall) {
+        let style = call.getString("style") ?? "light"
         DispatchQueue.main.async {
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            switch style {
+            case "medium": UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            case "heavy": UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+            case "soft": UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+            case "rigid": UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+            case "selection": UISelectionFeedbackGenerator().selectionChanged()
+            case "success": UINotificationFeedbackGenerator().notificationOccurred(.success)
+            case "warning": UINotificationFeedbackGenerator().notificationOccurred(.warning)
+            case "error": UINotificationFeedbackGenerator().notificationOccurred(.error)
+            default: UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }
             call.resolve()
         }
     }

@@ -34,11 +34,23 @@ public class NexAppPlugin extends Plugin {
         call.resolve(r);
     }
 
+    /** A tap you can feel. style: light (default), medium, heavy, soft, rigid, selection, success, warning, error. */
     @PluginMethod
     public void haptic(PluginCall call) {
+        String style = call.getString("style", "light");
+        int fx;
+        switch (style == null ? "light" : style) {
+            case "medium": case "rigid": fx = HapticFeedbackConstants.VIRTUAL_KEY; break;
+            case "heavy": case "warning": fx = HapticFeedbackConstants.LONG_PRESS; break;
+            case "selection": case "soft": fx = HapticFeedbackConstants.CLOCK_TICK; break;
+            case "success": fx = android.os.Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.CONFIRM : HapticFeedbackConstants.VIRTUAL_KEY; break;
+            case "error": fx = android.os.Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.REJECT : HapticFeedbackConstants.LONG_PRESS; break;
+            default: fx = HapticFeedbackConstants.KEYBOARD_TAP;
+        }
+        final int effect = fx;
         getActivity().runOnUiThread(() -> {
             if (getBridge().getWebView() != null) {
-                getBridge().getWebView().performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                getBridge().getWebView().performHapticFeedback(effect);
             }
             call.resolve();
         });
