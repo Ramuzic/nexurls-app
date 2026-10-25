@@ -32,6 +32,8 @@ class RootViewController: UIViewController, UITabBarDelegate {
     private var launchedAt = Date()
     private var webToTab: NSLayoutConstraint!
     private var webToBottom: NSLayoutConstraint!
+    /// How much of the screen the keyboard covers (0 when it is down).
+    private var keyboardHeight: CGFloat = 0
 
     /// iOS 26 draws the tab bar as a floating glass pill, so the page runs underneath it.
     private var floating: Bool {
@@ -86,6 +88,51 @@ class RootViewController: UIViewController, UITabBarDelegate {
         NotificationCenter.default.addObserver(forName: .nexAppOpenURL, object: nil, queue: .main) { [weak self] note in
             if let u = note.object as? URL { self?.open(u) }
         }
+
+        // The keyboard: the page shrinks to fit above it, like a native screen,
+        // instead of iOS sliding the whole page up and leaving pop-ups out of place.
+        for name in [UIResponder.keyboardWillChangeFrameNotification, UIResponder.keyboardWillHideNotification] {
+            NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] note in
+                self?.keyboardChanged(note)
+            }
+        }
+    }
+
+    private func keyboardChanged(_ note: Notification) {
+        let info = note.userInfo ?? [:]
+        var cover: CGFloat = 0
+        if note.name != UIResponder.keyboardWillHideNotification,
+           let end = (info[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
+            let f = view.convert(end, from: nil)
+            cover = max(0, view.bounds.maxY - f.minY)
+        }
+        if cover < 80 { cover = 0 } // a hardware keyboard's small bar is not a keyboard
+        if cover == keyboardHeight { return }
+        let wasUp = keyboardHeight > 0
+        keyboardHeight = cover
+        let duration = (info[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
+        if cover > 0 && !wasUp {
+            applyTabBar(true)
+        } else if cover == 0 && !booting {
+            applyTabBar(wantHidden)
+        }
+        layoutWeb()
+        UIView.animate(withDuration: duration, delay: 0, options: [.beginFromCurrentState]) {
+            self.view.layoutIfNeeded()
+        }
+    }
+
+    /// Where the page ends: above the keyboard, above the classic tab bar, or at the bottom.
+    private func layoutWeb() {
+        webToTab.isActive = false
+        webToBottom.isActive = false
+        if keyboardHeight > 0 {
+            webToBottom.constant = -keyboardHeight
+            webToBottom.isActive = true
+        } else {
+            webToBottom.constant = 0
+            (floating || tabHidden ? webToBottom : webToTab).isActive = true
+        }
     }
 
     override func viewDidLayoutSubviews() {
@@ -110,7 +157,7 @@ class RootViewController: UIViewController, UITabBarDelegate {
     /// While the app is starting this only remembers the wish; finishBoot() applies it.
     func setTabBarHidden(_ hidden: Bool) {
         wantHidden = hidden
-        if booting { return }
+        if booting || keyboardHeight > 0 { return }
         applyTabBar(hidden)
     }
 
@@ -129,15 +176,7 @@ class RootViewController: UIViewController, UITabBarDelegate {
     private func applyTabBar(_ hidden: Bool, animated: Bool = true) {
         if hidden == tabHidden && animated { return }
         tabHidden = hidden
-        if !floating {
-            if hidden {
-                webToTab.isActive = false
-                webToBottom.isActive = true
-            } else {
-                webToBottom.isActive = false
-                webToTab.isActive = true
-            }
-        }
+        layoutWeb()
         tabBar.isUserInteractionEnabled = !hidden
         let change = {
             self.tabBar.alpha = hidden ? 0 : 1
