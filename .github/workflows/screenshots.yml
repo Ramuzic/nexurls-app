@@ -75,7 +75,8 @@ jobs:
           shot 07-community 16 -NexURL "https://nexurls.com/?qcf_feed=1"
           shot 08-fresh 16 -NexURL "https://nexurls.com/explore/?mode=fresh"
           # The Pro page signed out shows the plans (used for the purchase review screenshots).
-          shot 14-pro 18 -NexURL "https://nexurls.com/pro/"
+          shot 14-pro 18 -NexURL "https://nexurls.com/pro/" \
+            -NexJS "setTimeout(function(){var p=document.querySelector('.nexu-pro-plans');if(p)p.scrollIntoView({block:'center'});},6000);"
 
           # Signed in as a free member, when the repository has the secrets
           # NEX_SHOT_USER and NEX_SHOT_PASS (a dummy member, never an admin).
@@ -91,9 +92,10 @@ jobs:
             if echo "$CK" | grep -q "wordpress_logged_in_"; then
               echo "::notice::Signed in for the member screenshots"
               shot 09-home-in 18 -NexCookies "$CK" -NexURL "https://nexurls.com/app/"
-              shot 10-community-in 20 -NexCookies "$CK" -NexURL "https://nexurls.com/?qcf_feed=1"
-              shot 11-fullscreen 30 -NexCookies "$CK" -NexURL "https://nexurls.com/explore/" \
-                -NexJS "setTimeout(function(){var e=document.querySelectorAll('a,button');for(var k=0;k<e.length;k++){var t=(e[k].textContent||'').trim();if(t.indexOf('Take me somewhere')===0||t==='Next'){e[k].click();break;}}},4000);"
+              shot 10-community-in 22 -NexCookies "$CK" -NexURL "https://nexurls.com/?qcf_feed=1" \
+                -NexJS "var c=function(l){var e=document.querySelectorAll('a,button');for(var k=0;k<e.length;k++){var t=(e[k].textContent||'').trim();if(l.indexOf(t)>-1&&e[k].offsetParent){e[k].click();return 1;}}return 0;};setTimeout(function(){c(['Skip for now','Skip, surprise me']);},4000);setTimeout(function(){c(['Skip']);},6500);"
+              shot 11-fullscreen 34 -NexCookies "$CK" -NexURL "https://nexurls.com/explore/" \
+                -NexJS "var c=function(l){var e=document.querySelectorAll('a,button');for(var k=0;k<e.length;k++){var t=(e[k].textContent||'').trim();if(l.indexOf(t)>-1&&e[k].offsetParent){e[k].click();return 1;}}return 0;};setTimeout(function(){c(['Skip for now','Skip, surprise me']);},4000);setTimeout(function(){c(['Skip']);},6500);setTimeout(function(){c(['Take me somewhere','Next','Next →']);},9000);"
               shot 12-reels-in 22 -NexCookies "$CK" -NexURL "https://nexurls.com/reels/"
               shot 13-dashboard-in 22 -NexCookies "$CK" -NexURL "https://nexurls.com/dashboard/" \
                 -NexJS "setTimeout(function(){var p=document.querySelector('.nxd-packs');if(p)p.scrollIntoView({block:'center'});},6000);"
