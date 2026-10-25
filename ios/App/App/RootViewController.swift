@@ -175,6 +175,19 @@ class RootViewController: UIViewController, UITabBarDelegate {
         if !floating {
             // Before iOS 26: a solid bar in the site's dark colour.
             classicAppearance()
+        } else {
+            // iOS 26: only the floating glass pill. A tab bar that is not inside a
+            // tab bar controller still paints a full-width band behind the pill by
+            // default; a clear background removes that band so the page shows through.
+            let a = UITabBarAppearance()
+            a.configureWithTransparentBackground()
+            a.backgroundColor = .clear
+            a.backgroundEffect = nil
+            a.shadowColor = .clear
+            tabBar.standardAppearance = a
+            tabBar.scrollEdgeAppearance = a
+            tabBar.backgroundColor = .clear
+            tabBar.isTranslucent = true
         }
         var items: [UITabBarItem] = []
         for (i, t) in config.tabs.enumerated() {
