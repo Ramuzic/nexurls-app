@@ -26,6 +26,10 @@ class RootViewController: UIViewController, UITabBarDelegate {
     private var isOffline = false
     private var shownOnboarding = false
     private var tabHidden = false
+    /// The tabs stay out of sight until the first page has loaded and the splash screen has gone.
+    private var booting = true
+    private var wantHidden = false
+    private var launchedAt = Date()
     private var webToTab: NSLayoutConstraint!
     private var webToBottom: NSLayoutConstraint!
 
@@ -69,6 +73,12 @@ class RootViewController: UIViewController, UITabBarDelegate {
             tabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -49)
         ])
 
+        // Hidden while the splash screen shows; finishBoot() brings it in.
+        launchedAt = Date()
+        applyTabBar(true, animated: false)
+        // Never leave the tabs away if the first page is slow or fails.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 6) { [weak self] in self?.finishBoot() }
+
         buildOfflineView()
         watchWebView()
         watchNetwork()
@@ -96,9 +106,28 @@ class RootViewController: UIViewController, UITabBarDelegate {
         #endif
     }
 
-    /// Slides the tab bar away (full screen browsing) and back.
+    /// Slides the tab bar away (full screen browsing, scrolling down, pop-ups) and back.
+    /// While the app is starting this only remembers the wish; finishBoot() applies it.
     func setTabBarHidden(_ hidden: Bool) {
-        if hidden == tabHidden { return }
+        wantHidden = hidden
+        if booting { return }
+        applyTabBar(hidden)
+    }
+
+    /// First page loaded: wait for the splash screen to finish, then fade the tabs in.
+    private func finishBoot() {
+        if !booting { return }
+        let splash = 1.3 // the splash screen shows for 1.2 seconds (capacitor.config.json)
+        let wait = max(0, splash - Date().timeIntervalSince(launchedAt))
+        DispatchQueue.main.asyncAfter(deadline: .now() + wait) { [weak self] in
+            guard let self = self, self.booting else { return }
+            self.booting = false
+            self.applyTabBar(self.wantHidden)
+        }
+    }
+
+    private func applyTabBar(_ hidden: Bool, animated: Bool = true) {
+        if hidden == tabHidden && animated { return }
         tabHidden = hidden
         if !floating {
             if hidden {
@@ -110,10 +139,15 @@ class RootViewController: UIViewController, UITabBarDelegate {
             }
         }
         tabBar.isUserInteractionEnabled = !hidden
-        UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut]) {
+        let change = {
             self.tabBar.alpha = hidden ? 0 : 1
-            self.tabBar.transform = hidden ? CGAffineTransform(translationX: 0, y: self.tabBar.bounds.height) : .identity
+            self.tabBar.transform = hidden ? CGAffineTransform(translationX: 0, y: max(self.tabBar.bounds.height, 90)) : .identity
             self.view.layoutIfNeeded()
+        }
+        if animated {
+            UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut, .beginFromCurrentState], animations: change)
+        } else {
+            change()
         }
         updateObscured()
     }
@@ -253,6 +287,7 @@ class RootViewController: UIViewController, UITabBarDelegate {
                 if w.isLoading { self.setTabBarHidden(false); return }
                 self.refresh.endRefreshing()
                 self.syncTab(w.url)
+                self.finishBoot()
                 if self.pendingChat {
                     self.pendingChat = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
