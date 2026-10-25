@@ -1,0 +1,52 @@
+name: Build app
+
+# Builds both apps on every push, so problems show up here and not on someone's Mac.
+# Android: a debug APK you can install on a phone (download it from the run's Artifacts).
+# iPhone: a simulator build that proves the app compiles. Signed TestFlight builds come later.
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npx cap sync android
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nexurls-android-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+
+  ios:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx cap sync ios
+      - name: Show Xcode version
+        run: xcodebuild -version
+      - name: Build for the iPhone simulator (no signing)
+        working-directory: ios/App
+        run: |
+          xcodebuild -project App.xcodeproj -scheme App -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build | tee build.log | grep -E "error:|warning: .*(NexApp|RootView|Onboarding|AppConfig|AppBridge)|BUILD (SUCCEEDED|FAILED)" || true
+          grep -q "BUILD SUCCEEDED" build.log

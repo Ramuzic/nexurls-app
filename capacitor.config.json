@@ -1,0 +1,32 @@
+{
+  "appId": "com.nexurls.app",
+  "appName": "NexURLs",
+  "webDir": "www",
+  "server": {
+    "url": "https://nexurls.com/app/",
+    "cleartext": false,
+    "allowNavigation": ["nexurls.com", "*.nexurls.com"]
+  },
+  "appendUserAgent": "NexURLsApp/1.0",
+  "backgroundColor": "#F4F0E8",
+  "ios": {
+    "contentInset": "never",
+    "scrollEnabled": true
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "disable",
+      "style": "LIGHT"
+    },
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "launchAutoHide": true,
+      "backgroundColor": "#121212",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_CROP"
+    }
+  }
+}

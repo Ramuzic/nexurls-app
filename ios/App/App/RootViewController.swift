@@ -1,0 +1,293 @@
+import UIKit
+import WebKit
+import Network
+
+extension Notification.Name {
+    /// Posted (with a URL as object) when a notification is tapped.
+    static let nexAppOpenURL = Notification.Name("nexAppOpenURL")
+}
+
+/// The app's main screen: the site in a web view, a native tab bar under it,
+/// a native offline screen, pull to refresh and the first-launch onboarding.
+class RootViewController: UIViewController, UITabBarDelegate {
+
+    /// A notification tapped before this screen existed (cold start) waits here.
+    static var pendingURL: URL?
+
+    private let config = AppConfig.shared
+    private let bridgeVC = AppBridgeViewController()
+    private let tabBar = UITabBar()
+    private let offlineView = UIView()
+    private let refresh = UIRefreshControl()
+    private let monitor = NWPathMonitor()
+    private var observers: [NSKeyValueObservation] = []
+    private var lastTag = 0
+    private var pendingChat = false
+    private var isOffline = false
+    private var shownOnboarding = false
+
+    private let chatJS = "(function(){try{if(window.MobileApp&&typeof MobileApp.open==='function'){MobileApp.open();return 'ok';}if(window.Widget&&typeof Widget.open==='function'){Widget.open();return 'ok';}var b=document.getElementById('bmc-mobile-btn')||document.getElementById('bmc-pill');if(b){b.click();return 'ok';}}catch(e){}return 'no';})()"
+
+    override var preferredStatusBarStyle: UIStatusBarStyle { .darkContent }
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .portrait }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = config.topColor
+
+        // The site.
+        addChild(bridgeVC)
+        let web = bridgeVC.view!
+        web.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(web)
+        bridgeVC.didMove(toParent: self)
+
+        // The native tab bar.
+        buildTabBar()
+        view.addSubview(tabBar)
+        tabBar.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            web.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            web.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            web.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            web.bottomAnchor.constraint(equalTo: tabBar.topAnchor),
+            tabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tabBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tabBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -49)
+        ])
+
+        buildOfflineView()
+        watchWebView()
+        watchNetwork()
+
+        NotificationCenter.default.addObserver(forName: .nexAppOpenURL, object: nil, queue: .main) { [weak self] note in
+            if let u = note.object as? URL { self?.open(u) }
+        }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if let u = RootViewController.pendingURL {
+            RootViewController.pendingURL = nil
+            open(u)
+        }
+        if !shownOnboarding && !UserDefaults.standard.bool(forKey: "nexapp_onboarded") && !config.onboarding.isEmpty {
+            shownOnboarding = true
+            let ob = OnboardingViewController()
+            ob.modalPresentationStyle = .fullScreen
+            ob.onDone = { UserDefaults.standard.set(true, forKey: "nexapp_onboarded") }
+            present(ob, animated: false)
+        }
+    }
+
+    // MARK: - Tab bar
+
+    private func buildTabBar() {
+        let a = UITabBarAppearance()
+        a.configureWithOpaqueBackground()
+        a.backgroundColor = config.barColor
+        a.shadowColor = UIColor(white: 1, alpha: 0.08)
+        for layout in [a.stackedLayoutAppearance, a.inlineLayoutAppearance, a.compactInlineLayoutAppearance] {
+            layout.normal.iconColor = config.inactiveColor
+            layout.normal.titleTextAttributes = [.foregroundColor: config.inactiveColor, .font: UIFont.systemFont(ofSize: 10, weight: .medium)]
+            layout.selected.iconColor = config.activeColor
+            layout.selected.titleTextAttributes = [.foregroundColor: config.activeColor, .font: UIFont.systemFont(ofSize: 10, weight: .semibold)]
+        }
+        tabBar.standardAppearance = a
+        tabBar.scrollEdgeAppearance = a
+        tabBar.tintColor = config.activeColor
+        tabBar.delegate = self
+
+        var items: [UITabBarItem] = []
+        for (i, t) in config.tabs.enumerated() {
+            let img = UIImage(systemName: AppConfig.symbol(t.icon))
+            items.append(UITabBarItem(title: t.label, image: img, tag: i))
+        }
+        tabBar.items = items
+        tabBar.selectedItem = items.first
+    }
+
+    func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        let tab = config.tabs[item.tag]
+        let same = item.tag == lastTag
+        lastTag = item.tag
+
+        if tab.action == "chat" {
+            openChat()
+            return
+        }
+        // Tapping the tab you are already on scrolls back to the top, like other apps.
+        if same, let cur = bridgeVC.webView?.url, score(tab, cur) > 0 {
+            bridgeVC.webView?.scrollView.setContentOffset(.zero, animated: true)
+            return
+        }
+        bridgeVC.webView?.load(URLRequest(url: tab.url))
+    }
+
+    /// How well a tab matches a page: same path, and every query value on the tab present on the page.
+    private func score(_ tab: AppTab, _ url: URL) -> Int {
+        if tab.action == "chat" || !config.isOwn(url) { return 0 }
+        func clean(_ p: String) -> String {
+            var s = p
+            while s.count > 1 && s.hasSuffix("/") { s.removeLast() }
+            return s.isEmpty ? "/" : s
+        }
+        if clean(tab.url.path) != clean(url.path) { return 0 }
+        let want = URLComponents(url: tab.url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        let have = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        var s = 1
+        for q in want {
+            if !have.contains(where: { $0.name == q.name && $0.value == q.value }) { return 0 }
+            s += 1
+        }
+        return s
+    }
+
+    private func syncTab(_ url: URL?) {
+        guard let url = url, let items = tabBar.items else { return }
+        var best = -1, bestScore = 0
+        for (i, t) in config.tabs.enumerated() {
+            let s = score(t, url)
+            if s > bestScore { bestScore = s; best = i }
+        }
+        // A page no tab points at (a single link, a profile) keeps the last tab lit.
+        if best >= 0 && best < items.count {
+            tabBar.selectedItem = items[best]
+            lastTag = best
+        }
+    }
+
+    // MARK: - Chat
+
+    private func openChat() {
+        guard let web = bridgeVC.webView else { return }
+        web.evaluateJavaScript(chatJS) { [weak self] result, _ in
+            guard let self = self else { return }
+            if (result as? String) != "ok" {
+                // Chat lives on the site's pages; open home, then the chat once it has loaded.
+                self.pendingChat = true
+                web.load(URLRequest(url: self.config.start))
+            }
+        }
+    }
+
+    // MARK: - Web view state
+
+    private func watchWebView() {
+        guard let web = bridgeVC.webView else { return }
+        refresh.tintColor = config.activeColor
+        refresh.addTarget(self, action: #selector(pullToRefresh), for: .valueChanged)
+        web.scrollView.refreshControl = refresh
+
+        observers.append(web.observe(\.url, options: [.new]) { [weak self] w, _ in
+            DispatchQueue.main.async { self?.syncTab(w.url) }
+        })
+        observers.append(web.observe(\.isLoading, options: [.new]) { [weak self] w, _ in
+            DispatchQueue.main.async {
+                guard let self = self, !w.isLoading else { return }
+                self.refresh.endRefreshing()
+                self.syncTab(w.url)
+                if self.pendingChat {
+                    self.pendingChat = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                        w.evaluateJavaScript(self.chatJS, completionHandler: nil)
+                    }
+                }
+            }
+        })
+    }
+
+    @objc private func pullToRefresh() {
+        bridgeVC.webView?.reload()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8) { [weak self] in self?.refresh.endRefreshing() }
+    }
+
+    /// Opens a link from a notification. Links to the site stay in the app; others go to Safari.
+    func open(_ url: URL) {
+        if config.isOwn(url) {
+            bridgeVC.webView?.load(URLRequest(url: url))
+        } else {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    // MARK: - Offline
+
+    private func buildOfflineView() {
+        offlineView.backgroundColor = config.paperColor
+        offlineView.isHidden = true
+        offlineView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(offlineView)
+        NSLayoutConstraint.activate([
+            offlineView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            offlineView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            offlineView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            offlineView.bottomAnchor.constraint(equalTo: tabBar.topAnchor)
+        ])
+
+        let icon = UIImageView(image: UIImage(systemName: "wifi.slash"))
+        icon.tintColor = config.activeColor
+        icon.contentMode = .scaleAspectFit
+        icon.heightAnchor.constraint(equalToConstant: 56).isActive = true
+
+        let title = UILabel()
+        title.text = config.offlineTitle
+        title.font = .systemFont(ofSize: 22, weight: .bold)
+        title.textColor = config.inkColor
+        title.textAlignment = .center
+
+        let text = UILabel()
+        text.text = config.offlineText
+        text.font = .systemFont(ofSize: 16)
+        text.textColor = config.mutedColor
+        text.textAlignment = .center
+        text.numberOfLines = 0
+
+        let button = UIButton(type: .system)
+        button.setTitle(config.offlineButton, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
+        button.backgroundColor = config.activeColor
+        button.setTitleColor(config.inkColor, for: .normal)
+        button.layer.cornerRadius = 24
+        button.heightAnchor.constraint(equalToConstant: 48).isActive = true
+        button.widthAnchor.constraint(equalToConstant: 200).isActive = true
+        button.addTarget(self, action: #selector(retry), for: .touchUpInside)
+
+        let stack = UIStackView(arrangedSubviews: [icon, title, text, button])
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 14
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        offlineView.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.centerYAnchor.constraint(equalTo: offlineView.centerYAnchor),
+            stack.leadingAnchor.constraint(equalTo: offlineView.leadingAnchor, constant: 32),
+            stack.trailingAnchor.constraint(equalTo: offlineView.trailingAnchor, constant: -32)
+        ])
+    }
+
+    private func watchNetwork() {
+        monitor.pathUpdateHandler = { [weak self] path in
+            DispatchQueue.main.async { self?.setOffline(path.status != .satisfied) }
+        }
+        monitor.start(queue: DispatchQueue(label: "nexapp.network"))
+    }
+
+    private func setOffline(_ off: Bool) {
+        if off == isOffline { return }
+        isOffline = off
+        offlineView.isHidden = !off
+        if !off { bridgeVC.webView?.reload() }
+    }
+
+    @objc private func retry() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        if monitor.currentPath.status == .satisfied {
+            setOffline(false)
+            bridgeVC.webView?.reload()
+        }
+    }
+}

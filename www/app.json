@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "start": "https://nexurls.com/app/",
+  "host": "nexurls.com",
+  "onesignal_app_id": "94713884-283a-4d75-a719-843d0ec6306b",
+  "colors": {
+    "top": "#F4F0E8",
+    "bar": "#121212",
+    "active": "#FF5A1F",
+    "inactive": "#B9B2A6",
+    "paper": "#F4F0E8",
+    "ink": "#121212",
+    "muted": "#6B665E"
+  },
+  "tabs": [
+    { "label": "Home", "url": "https://nexurls.com/app/", "icon": "home" },
+    { "label": "Next", "url": "https://nexurls.com/?go=1", "icon": "next" },
+    { "label": "Reels", "url": "https://nexurls.com/reels/", "icon": "reels" },
+    { "label": "Community", "url": "https://nexurls.com/?qcf_feed=1", "icon": "community" },
+    { "label": "Chat", "url": "https://nexurls.com/app/", "icon": "chat", "action": "chat" }
+  ],
+  "onboarding": [
+    { "icon": "next", "title": "There's always another URL", "text": "Tap Next and land on a website you have never seen, picked by real people." },
+    { "icon": "share", "title": "Share what you find", "text": "Submit the sites you love. Get likes, saves and real visitors to your own." },
+    { "icon": "reels", "title": "Watch, talk, explore", "text": "Reels, the community and chat, all in one place." },
+    { "icon": "bell", "title": "Never miss a reply", "text": "Turn on notifications for messages, replies and likes. You can change this any time.", "push": true }
+  ],
+  "offline": {
+    "title": "You're offline",
+    "text": "Check your connection and try again.",
+    "button": "Try again"
+  }
+}
