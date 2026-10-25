@@ -8,6 +8,8 @@ struct AppTab {
     let url: URL
     let icon: String
     let action: String
+    /// Extra page paths that also light this tab (Home lights on the site root too).
+    let match: [String]
 }
 
 struct OnboardingPage {
@@ -61,10 +63,10 @@ final class AppConfig {
         for item in json["tabs"] as? [[String: Any]] ?? [] {
             guard let label = item["label"] as? String,
                   let u = URL(string: item["url"] as? String ?? "") else { continue }
-            t.append(AppTab(label: label, url: u, icon: item["icon"] as? String ?? "home", action: item["action"] as? String ?? "navigate"))
+            t.append(AppTab(label: label, url: u, icon: item["icon"] as? String ?? "home", action: item["action"] as? String ?? "navigate", match: item["match"] as? [String] ?? []))
         }
         if t.isEmpty {
-            t = [AppTab(label: "Home", url: start, icon: "home", action: "navigate")]
+            t = [AppTab(label: "Home", url: start, icon: "home", action: "navigate", match: ["/"])]
         }
         tabs = t
 

@@ -52,6 +52,8 @@ public class MainActivity extends BridgeActivity {
     private FrameLayout offlineView;
     private boolean offline = false;
     private boolean pendingChat = false;
+    private boolean tabHidden = false;
+    private boolean typing = false;
     private ConnectivityManager.NetworkCallback netCallback;
 
     @Override
@@ -154,13 +156,20 @@ public class MainActivity extends BridgeActivity {
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
             Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
-            boolean typing = insets.isVisible(WindowInsetsCompat.Type.ime());
+            typing = insets.isVisible(WindowInsetsCompat.Type.ime());
             root.setPadding(bars.left, bars.top, bars.right, typing ? ime.bottom : 0);
-            tabBar.setVisibility(typing ? View.GONE : View.VISIBLE);
+            tabBar.setVisibility(typing || tabHidden ? View.GONE : View.VISIBLE);
             tabBar.setPadding(0, 0, 0, bars.bottom);
             return WindowInsetsCompat.CONSUMED;
         });
         applyBarColors();
+    }
+
+    /** Hides the tab bar while a website is open full screen, and brings it back. */
+    void setTabBarHidden(boolean hidden) {
+        if (hidden == tabHidden || tabBar == null) return;
+        tabHidden = hidden;
+        tabBar.setVisibility(typing || tabHidden ? View.GONE : View.VISIBLE);
     }
 
     /** Dark icons on the light top bar; light gesture bar over the dark tab bar. */
@@ -246,7 +255,12 @@ public class MainActivity extends BridgeActivity {
     private int score(AppConfig.Tab t, String url) {
         if (url == null || "chat".equals(t.action) || !cfg.isOwn(url)) return 0;
         Uri want = Uri.parse(t.url), have = Uri.parse(url);
-        if (!clean(want.getPath()).equals(clean(have.getPath()))) return 0;
+        if (!clean(want.getPath()).equals(clean(have.getPath()))) {
+            // Extra paths for this tab (Home also lights on the site root).
+            if (have.getQuery() != null && !have.getQuery().isEmpty()) return 0;
+            for (String m : t.match) if (clean(m).equals(clean(have.getPath()))) return 1;
+            return 0;
+        }
         int s = 1;
         for (String k : want.getQueryParameterNames()) {
             String w = want.getQueryParameter(k);
@@ -293,6 +307,12 @@ public class MainActivity extends BridgeActivity {
     private void watchWebView() {
         if (bridge == null) return;
         bridge.addWebViewListener(new WebViewListener() {
+            @Override
+            public void onPageStarted(WebView webView) {
+                // A new page always starts with the tabs showing.
+                setTabBarHidden(false);
+            }
+
             @Override
             public void onPageLoaded(WebView webView) {
                 syncTab(webView.getUrl());

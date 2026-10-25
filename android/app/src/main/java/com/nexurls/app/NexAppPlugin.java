@@ -44,6 +44,16 @@ public class NexAppPlugin extends Plugin {
         });
     }
 
+    /** The site hides the tabs while a website is open full screen: { hidden: true }. */
+    @PluginMethod
+    public void tabBar(PluginCall call) {
+        boolean hidden = Boolean.TRUE.equals(call.getBoolean("hidden", false));
+        getActivity().runOnUiThread(() -> {
+            if (getActivity() instanceof MainActivity) ((MainActivity) getActivity()).setTabBarHidden(hidden);
+            call.resolve();
+        });
+    }
+
     @PluginMethod
     public void info(PluginCall call) {
         JSObject r = new JSObject();

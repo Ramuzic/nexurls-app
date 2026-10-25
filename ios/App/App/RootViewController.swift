@@ -25,6 +25,15 @@ class RootViewController: UIViewController, UITabBarDelegate {
     private var pendingChat = false
     private var isOffline = false
     private var shownOnboarding = false
+    private var tabHidden = false
+    private var webToTab: NSLayoutConstraint!
+    private var webToBottom: NSLayoutConstraint!
+
+    /// iOS 26 draws the tab bar as a floating glass pill, so the page runs underneath it.
+    private var floating: Bool {
+        if #available(iOS 26.0, *) { return true }
+        return false
+    }
 
     private let chatJS = "(function(){try{if(window.MobileApp&&typeof MobileApp.open==='function'){MobileApp.open();return 'ok';}if(window.Widget&&typeof Widget.open==='function'){Widget.open();return 'ok';}var b=document.getElementById('bmc-mobile-btn')||document.getElementById('bmc-pill');if(b){b.click();return 'ok';}}catch(e){}return 'no';})()"
 
@@ -47,11 +56,13 @@ class RootViewController: UIViewController, UITabBarDelegate {
         view.addSubview(tabBar)
         tabBar.translatesAutoresizingMaskIntoConstraints = false
 
+        webToTab = web.bottomAnchor.constraint(equalTo: tabBar.topAnchor)
+        webToBottom = web.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        (floating ? webToBottom : webToTab).isActive = true
         NSLayoutConstraint.activate([
             web.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             web.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             web.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            web.bottomAnchor.constraint(equalTo: tabBar.topAnchor),
             tabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tabBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -65,6 +76,46 @@ class RootViewController: UIViewController, UITabBarDelegate {
         NotificationCenter.default.addObserver(forName: .nexAppOpenURL, object: nil, queue: .main) { [weak self] note in
             if let u = note.object as? URL { self?.open(u) }
         }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateObscured()
+    }
+
+    /// With the floating tab bar, tell the page how much of its bottom is covered,
+    /// so fixed buttons and the end of the page sit above the glass pill.
+    private func updateObscured() {
+        #if compiler(>=6.2)
+        if #available(iOS 26.0, *), let web = bridgeVC.webView {
+            let inset = tabHidden ? 0 : max(0, view.bounds.maxY - tabBar.frame.minY)
+            if web.obscuredContentInsets.bottom != inset {
+                web.obscuredContentInsets = UIEdgeInsets(top: 0, left: 0, bottom: inset, right: 0)
+            }
+        }
+        #endif
+    }
+
+    /// Slides the tab bar away (full screen browsing) and back.
+    func setTabBarHidden(_ hidden: Bool) {
+        if hidden == tabHidden { return }
+        tabHidden = hidden
+        if !floating {
+            if hidden {
+                webToTab.isActive = false
+                webToBottom.isActive = true
+            } else {
+                webToBottom.isActive = false
+                webToTab.isActive = true
+            }
+        }
+        tabBar.isUserInteractionEnabled = !hidden
+        UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut]) {
+            self.tabBar.alpha = hidden ? 0 : 1
+            self.tabBar.transform = hidden ? CGAffineTransform(translationX: 0, y: self.tabBar.bounds.height) : .identity
+            self.view.layoutIfNeeded()
+        }
+        updateObscured()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -85,6 +136,22 @@ class RootViewController: UIViewController, UITabBarDelegate {
     // MARK: - Tab bar
 
     private func buildTabBar() {
+        tabBar.delegate = self
+        tabBar.tintColor = config.activeColor
+        if !floating {
+            // Before iOS 26: a solid bar in the site's dark colour.
+            classicAppearance()
+        }
+        var items: [UITabBarItem] = []
+        for (i, t) in config.tabs.enumerated() {
+            let img = UIImage(systemName: AppConfig.symbol(t.icon))
+            items.append(UITabBarItem(title: t.label, image: img, tag: i))
+        }
+        tabBar.items = items
+        tabBar.selectedItem = items.first
+    }
+
+    private func classicAppearance() {
         let a = UITabBarAppearance()
         a.configureWithOpaqueBackground()
         a.backgroundColor = config.barColor
@@ -97,16 +164,6 @@ class RootViewController: UIViewController, UITabBarDelegate {
         }
         tabBar.standardAppearance = a
         tabBar.scrollEdgeAppearance = a
-        tabBar.tintColor = config.activeColor
-        tabBar.delegate = self
-
-        var items: [UITabBarItem] = []
-        for (i, t) in config.tabs.enumerated() {
-            let img = UIImage(systemName: AppConfig.symbol(t.icon))
-            items.append(UITabBarItem(title: t.label, image: img, tag: i))
-        }
-        tabBar.items = items
-        tabBar.selectedItem = items.first
     }
 
     func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
@@ -135,7 +192,11 @@ class RootViewController: UIViewController, UITabBarDelegate {
             while s.count > 1 && s.hasSuffix("/") { s.removeLast() }
             return s.isEmpty ? "/" : s
         }
-        if clean(tab.url.path) != clean(url.path) { return 0 }
+        if clean(tab.url.path) != clean(url.path) {
+            // Extra paths for this tab (Home also lights on the site root).
+            let q = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+            return q.isEmpty && tab.match.map(clean).contains(clean(url.path)) ? 1 : 0
+        }
         let want = URLComponents(url: tab.url, resolvingAgainstBaseURL: false)?.queryItems ?? []
         let have = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
         var s = 1
@@ -187,7 +248,9 @@ class RootViewController: UIViewController, UITabBarDelegate {
         })
         observers.append(web.observe(\.isLoading, options: [.new]) { [weak self] w, _ in
             DispatchQueue.main.async {
-                guard let self = self, !w.isLoading else { return }
+                guard let self = self else { return }
+                // A new page always starts with the tabs showing.
+                if w.isLoading { self.setTabBarHidden(false); return }
                 self.refresh.endRefreshing()
                 self.syncTab(w.url)
                 if self.pendingChat {

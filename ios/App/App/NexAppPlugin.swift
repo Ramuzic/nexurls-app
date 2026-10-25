@@ -15,7 +15,8 @@ public class NexAppPlugin: CAPPlugin, CAPBridgedPlugin {
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "registerPush", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "haptic", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "info", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "info", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "tabBar", returnType: CAPPluginReturnPromise)
     ]
 
     /// Links this phone to the signed-in member, so the site's notifications reach it.
@@ -38,6 +39,15 @@ public class NexAppPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc public func haptic(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            call.resolve()
+        }
+    }
+
+    /// The site hides the tabs while a website is open full screen: { hidden: true }.
+    @objc public func tabBar(_ call: CAPPluginCall) {
+        let hidden = call.getBool("hidden") ?? false
+        DispatchQueue.main.async {
+            (self.bridge?.viewController?.parent as? RootViewController)?.setTabBarHidden(hidden)
             call.resolve()
         }
     }

@@ -41,7 +41,12 @@ jobs:
           path: android/app/build/outputs/apk/debug/*.apk
 
   ios:
-    runs-on: macos-15
+    # macos-15 builds with Xcode 16 (the classic bar); macos-26 with Xcode 26 (the floating glass bar).
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-26]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -62,7 +67,7 @@ jobs:
       - name: Report what was built
         working-directory: ios/App
         run: |
-          echo "::notice title=Xcode::$(xcodebuild -version | head -1)"
+          echo "::notice title=Xcode (${{ matrix.os }})::$(xcodebuild -version | head -1)"
           grep -q "BUILD SUCCEEDED" build.log && echo "::notice title=iPhone::BUILD SUCCEEDED"
           for c in RootViewController OnboardingViewController NexAppPlugin AppBridgeViewController AppConfig; do
             grep -q "$c.swift" build.log && echo "::notice title=iPhone compiled::$c" || echo "::error title=iPhone::$c not compiled"

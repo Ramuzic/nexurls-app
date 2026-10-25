@@ -19,8 +19,10 @@ public final class AppConfig {
 
     public static final class Tab {
         public final String label, url, icon, action;
-        Tab(String label, String url, String icon, String action) {
-            this.label = label; this.url = url; this.icon = icon; this.action = action;
+        /** Extra page paths that also light this tab (Home lights on the site root too). */
+        public final List<String> match;
+        Tab(String label, String url, String icon, String action, List<String> match) {
+            this.label = label; this.url = url; this.icon = icon; this.action = action; this.match = match;
         }
     }
 
@@ -79,7 +81,10 @@ public final class AppConfig {
             if (t != null) {
                 for (int i = 0; i < t.length(); i++) {
                     JSONObject o = t.getJSONObject(i);
-                    tabs.add(new Tab(o.optString("label"), o.optString("url", start), o.optString("icon", "home"), o.optString("action", "navigate")));
+                    List<String> m = new ArrayList<>();
+                    JSONArray ma = o.optJSONArray("match");
+                    if (ma != null) for (int k = 0; k < ma.length(); k++) m.add(ma.optString(k));
+                    tabs.add(new Tab(o.optString("label"), o.optString("url", start), o.optString("icon", "home"), o.optString("action", "navigate"), m));
                 }
             }
             JSONArray ob = j.optJSONArray("onboarding");
@@ -98,7 +103,11 @@ public final class AppConfig {
         } catch (Exception ignored) {
             // Fall back to the defaults above.
         }
-        if (tabs.isEmpty()) tabs.add(new Tab("Home", start, "home", "navigate"));
+        if (tabs.isEmpty()) {
+            List<String> m = new ArrayList<>();
+            m.add("/");
+            tabs.add(new Tab("Home", start, "home", "navigate", m));
+        }
     }
 
     private static int color(JSONObject o, String key, int def) {
