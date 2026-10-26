@@ -69,7 +69,7 @@ jobs:
         run: |
           echo "::notice title=Xcode (${{ matrix.os }})::$(xcodebuild -version | head -1)"
           grep -q "BUILD SUCCEEDED" build.log && echo "::notice title=iPhone::BUILD SUCCEEDED"
-          for c in RootViewController OnboardingViewController NexAppPlugin AppBridgeViewController AppConfig; do
+          for c in RootViewController OnboardingViewController NexAppPlugin AppBridgeViewController AppConfig SceneDelegate NexWidget; do
             grep -q "$c.swift" build.log && echo "::notice title=iPhone compiled::$c" || echo "::error title=iPhone::$c not compiled"
           done
           grep -q -i "onesignal" build.log && echo "::notice title=iPhone OneSignal::OneSignal package resolved and linked" || echo "::warning title=iPhone::OneSignal not seen in build log"
