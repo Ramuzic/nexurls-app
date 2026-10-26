@@ -20,12 +20,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let item = connectionOptions.shortcutItem, let url = SceneDelegate.url(for: item) {
             RootViewController.pendingURL = url
         }
+        // Started from the home screen widget.
+        if let url = connectionOptions.urlContexts.first?.url, SceneDelegate.isSite(url) {
+            RootViewController.pendingURL = url
+        }
 
         SceneDelegateProxy.shared.scene(scene, willConnectTo: session, options: connectionOptions)
     }
 
+    /// A tap on the home screen widget while the app is running.
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        if let url = URLContexts.first?.url, SceneDelegate.isSite(url) { open(url) }
         SceneDelegateProxy.shared.scene(scene, openURLContexts: URLContexts)
+    }
+
+    static func isSite(_ url: URL) -> Bool {
+        let host = (url.host ?? "").lowercased()
+        return (url.scheme == "https" || url.scheme == "http") && (host == "nexurls.com" || host.hasSuffix(".nexurls.com"))
     }
 
     /// A nexurls.com link tapped in Messages, Mail, X or Safari while the app is running.

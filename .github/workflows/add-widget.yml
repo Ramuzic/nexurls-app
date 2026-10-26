@@ -1,0 +1,26 @@
+# One time: adds the home screen widget target to the iPhone project (needs a Mac with the
+# xcodeproj tool), then commits the updated project. Run from the Actions tab or the API.
+name: Add widget target
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  add:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the project tool
+        run: gem install xcodeproj --no-document || sudo gem install xcodeproj --no-document
+      - name: Add the widget
+        run: ruby scripts/add-widget-target.rb
+      - name: Save the project
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add ios/App/App.xcodeproj
+          git commit -m "Add the NexWidget home screen widget target" || echo "No changes"
+          git push
