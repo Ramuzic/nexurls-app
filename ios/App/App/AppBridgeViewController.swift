@@ -17,6 +17,9 @@ class AppBridgeViewController: CAPBridgeViewController {
         web.scrollView.contentInsetAdjustmentBehavior = .never
         // Swipe from the left edge to go back, like any iPhone app.
         web.allowsBackForwardNavigationGestures = true
+        // Pages may not take over the screen with element full screen: inside this app it crashed (the galaxy's full screen button).
+        // They use their own full-window view instead.
+        if #available(iOS 15.4, *) { web.configuration.preferences.isElementFullscreenEnabled = false }
         web.isOpaque = false
         web.backgroundColor = AppConfig.shared.paperColor
         web.scrollView.backgroundColor = AppConfig.shared.paperColor
