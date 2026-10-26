@@ -343,6 +343,10 @@ class RootViewController: UIViewController, UITabBarDelegate {
         guard let web = bridgeVC.webView else { return }
         refresh.tintColor = config.activeColor
         refresh.addTarget(self, action: #selector(pullToRefresh), for: .valueChanged)
+        // Capacitor turns the page's bounce off, and pull to refresh needs it: a pull at the top
+        // has to be able to stretch the page down. Always bounce, even on pages that fit the screen.
+        web.scrollView.bounces = true
+        web.scrollView.alwaysBounceVertical = true
         web.scrollView.refreshControl = refresh
 
         observers.append(web.observe(\.url, options: [.new]) { [weak self] w, _ in
@@ -377,10 +381,15 @@ class RootViewController: UIViewController, UITabBarDelegate {
     func setRefreshEnabled(_ on: Bool) {
         guard let web = bridgeVC.webView else { return }
         if on {
+            web.scrollView.bounces = true
+            web.scrollView.alwaysBounceVertical = true
             if web.scrollView.refreshControl == nil { web.scrollView.refreshControl = refresh }
         } else {
             refresh.endRefreshing()
             web.scrollView.refreshControl = nil
+            // No rubber band where a pull means something else (Reels, full screen, the galaxy).
+            web.scrollView.bounces = false
+            web.scrollView.alwaysBounceVertical = false
         }
     }
 
