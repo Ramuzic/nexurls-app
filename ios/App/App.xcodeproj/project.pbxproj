@@ -7,24 +7,57 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
-		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
+		0AC863A1F91175BE7000A57C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1F4B44CD642B74DBA99BA1BC /* Foundation.framework */; };
 		0E51A9F12FF0000100A1B2C3 /* OneSignalFramework in Frameworks */ = {isa = PBXBuildFile; productRef = 0E51A9F22FF0000100A1B2C3 /* OneSignalFramework */; };
+		1255B921CFF62A87026FAA12 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D496F48C989E090660FA2FEE /* RootViewController.swift */; };
+		22ECBE2B0D46BE9E4FAA47FD /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 51D1C4687992F47BCD5FCF93 /* WidgetKit.framework */; };
+		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+		3C01295EE75EE2C6BD48062F /* NexWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15A68699CC1D1E232EF72B14 /* NexWidget.swift */; };
+		428A7008F9CCE95DBBD5409B /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58EE4F6E05090EAB5E95A956 /* AppConfig.swift */; };
+		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
-		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
-		AEB6DFB7DD524710DB514726 /* OnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003097A70F8C485695AB3922 /* OnboardingViewController.swift */; };
-		1255B921CFF62A87026FAA12 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D496F48C989E090660FA2FEE /* RootViewController.swift */; };
-		EA2F3360074404D41C584F0F /* AppBridgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8A02FD1E906E9D9267C7276 /* AppBridgeViewController.swift */; };
 		58CD4B6001C4052EFC805974 /* NexAppPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE8A5EB1264E38DB1DD8AC6 /* NexAppPlugin.swift */; };
-		428A7008F9CCE95DBBD5409B /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58EE4F6E05090EAB5E95A956 /* AppConfig.swift */; };
+		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
+		A9BA5F6BD6082343A47D8AF0 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEABCBD94CD01C9289A28D5C /* SwiftUI.framework */; };
+		AEB6DFB7DD524710DB514726 /* OnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 003097A70F8C485695AB3922 /* OnboardingViewController.swift */; };
+		DD952FDFD1B609F054BE49DB /* NexWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = EC2451EECD4ABB4A7F6AD88E /* NexWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		EA2F3360074404D41C584F0F /* AppBridgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8A02FD1E906E9D9267C7276 /* AppBridgeViewController.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		0FBA5D125DE2E6935D38E568 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4A62546B8CBC7A2FEC94BFC3;
+			remoteInfo = NexWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		724429D413550B4BFD57689B /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				DD952FDFD1B609F054BE49DB /* NexWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		003097A70F8C485695AB3922 /* OnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewController.swift; sourceTree = "<group>"; };
+		0E51A9F42FF0000100A1B2C3 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		15A68699CC1D1E232EF72B14 /* NexWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NexWidget.swift; sourceTree = "<group>"; };
+		1F4B44CD642B74DBA99BA1BC /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -34,14 +67,16 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
-		0E51A9F42FF0000100A1B2C3 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
-		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		003097A70F8C485695AB3922 /* OnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewController.swift; sourceTree = "<group>"; };
-		D496F48C989E090660FA2FEE /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
-		A8A02FD1E906E9D9267C7276 /* AppBridgeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBridgeViewController.swift; sourceTree = "<group>"; };
-		9DE8A5EB1264E38DB1DD8AC6 /* NexAppPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NexAppPlugin.swift; sourceTree = "<group>"; };
+		51D1C4687992F47BCD5FCF93 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/WidgetKit.framework; sourceTree = DEVELOPER_DIR; };
 		58EE4F6E05090EAB5E95A956 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		9DE8A5EB1264E38DB1DD8AC6 /* NexAppPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NexAppPlugin.swift; sourceTree = "<group>"; };
+		A8A02FD1E906E9D9267C7276 /* AppBridgeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBridgeViewController.swift; sourceTree = "<group>"; };
+		D496F48C989E090660FA2FEE /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
+		E554CFEAE1B5D344C222C32F /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EC2451EECD4ABB4A7F6AD88E /* NexWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NexWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		FEABCBD94CD01C9289A28D5C /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/SwiftUI.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,15 +89,37 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BA293B602825895565037B4D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0AC863A1F91175BE7000A57C /* Foundation.framework in Frameworks */,
+				22ECBE2B0D46BE9E4FAA47FD /* WidgetKit.framework in Frameworks */,
+				A9BA5F6BD6082343A47D8AF0 /* SwiftUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2DC08556E08C80EDCBB707E0 /* NexWidget */ = {
+			isa = PBXGroup;
+			children = (
+				15A68699CC1D1E232EF72B14 /* NexWidget.swift */,
+				E554CFEAE1B5D344C222C32F /* Info.plist */,
+			);
+			name = NexWidget;
+			path = NexWidget;
+			sourceTree = "<group>";
+		};
 		504EC2FB1FED79650016851F = {
 			isa = PBXGroup;
 			children = (
 				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
 				504EC3051FED79650016851F /* Products */,
+				83488B3C5F682458B59B07A0 /* Frameworks */,
+				2DC08556E08C80EDCBB707E0 /* NexWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -70,6 +127,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				EC2451EECD4ABB4A7F6AD88E /* NexWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -96,9 +154,44 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		83488B3C5F682458B59B07A0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B114B42013BE9AFA77CC7644 /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B114B42013BE9AFA77CC7644 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				1F4B44CD642B74DBA99BA1BC /* Foundation.framework */,
+				51D1C4687992F47BCD5FCF93 /* WidgetKit.framework */,
+				FEABCBD94CD01C9289A28D5C /* SwiftUI.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		4A62546B8CBC7A2FEC94BFC3 /* NexWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EE9DE91463556E7AD4B8F0DA /* Build configuration list for PBXNativeTarget "NexWidget" */;
+			buildPhases = (
+				A70C53B09FA08D5E9E7A6BF8 /* Sources */,
+				BA293B602825895565037B4D /* Frameworks */,
+				2B07C1A0080A609E51125057 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NexWidget;
+			productName = NexWidget;
+			productReference = EC2451EECD4ABB4A7F6AD88E /* NexWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		504EC3031FED79650016851F /* App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 504EC3161FED79650016851F /* Build configuration list for PBXNativeTarget "App" */;
@@ -106,10 +199,12 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				724429D413550B4BFD57689B /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A20695452357CB395962E23C /* PBXTargetDependency */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -154,11 +249,19 @@
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				4A62546B8CBC7A2FEC94BFC3 /* NexWidget */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		2B07C1A0080A609E51125057 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3021FED79650016851F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -189,7 +292,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A70C53B09FA08D5E9E7A6BF8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3C01295EE75EE2C6BD48062F /* NexWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A20695452357CB395962E23C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = NexWidget;
+			target = 4A62546B8CBC7A2FEC94BFC3 /* NexWidget */;
+			targetProxy = 0FBA5D125DE2E6935D38E568 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
@@ -366,6 +486,57 @@
 			};
 			name = Release;
 		};
+		80F060118062E3E8DA2AC8DB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NexWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nexurls.app.NexWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		E75328D95C89C310D48B3AED /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NexWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nexurls.app.NexWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -383,6 +554,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EE9DE91463556E7AD4B8F0DA /* Build configuration list for PBXNativeTarget "NexWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E75328D95C89C310D48B3AED /* Release */,
+				80F060118062E3E8DA2AC8DB /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -408,15 +588,15 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		4D22ABE82AF431CB00220026 /* CapApp-SPM */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D4C12C0A2AAA248700AAC8A2 /* XCLocalSwiftPackageReference "CapApp-SPM" */;
-			productName = "CapApp-SPM";
-		};
 		0E51A9F22FF0000100A1B2C3 /* OneSignalFramework */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 0E51A9F32FF0000100A1B2C3 /* XCRemoteSwiftPackageReference "OneSignal-XCFramework" */;
 			productName = OneSignalFramework;
+		};
+		4D22ABE82AF431CB00220026 /* CapApp-SPM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D4C12C0A2AAA248700AAC8A2 /* XCLocalSwiftPackageReference "CapApp-SPM" */;
+			productName = "CapApp-SPM";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
