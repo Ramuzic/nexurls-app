@@ -24,6 +24,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>NexURLs uses the camera so you can record short video reactions to links and add photos to your posts.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>NexURLs uses the microphone to record the sound for your video reactions.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>OneSignal_suppress_launch_urls</key>
