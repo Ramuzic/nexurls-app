@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NexURLs</title>
+<style>
+  :root { --paper: #F4F0E8; --ink: #121212; --muted: #6B665E; --sign: #FF5A1F; }
+  @media (prefers-color-scheme: dark) { :root { --paper: #121212; --ink: #F4F0E8; --muted: #A9A296; } }
+  html, body { margin: 0; height: 100%; background: var(--paper); color: var(--ink); font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-user-select: none; user-select: none; }
+  main { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 32px; box-sizing: border-box; }
+  .mark { font-weight: 800; font-size: 22px; letter-spacing: -0.01em; margin-bottom: 26px; }
+  .mark span { color: var(--sign); }
+  svg { width: 56px; height: 56px; color: var(--sign); margin-bottom: 14px; }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  p { color: var(--muted); margin: 0 0 24px; max-width: 300px; }
+  button { appearance: none; border: 0; background: var(--sign); color: #121212; font-weight: 700; font-size: 17px; padding: 14px 34px; border-radius: 999px; -webkit-tap-highlight-color: transparent; transition: transform .12s ease; }
+  button:active { transform: scale(.95); }
+</style>
+</head>
+<body>
+<main>
+  <div class="mark">Nex<span>URLs</span></div>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8.8a15 15 0 0 1 20 0"/><path d="M5 12.3a10 10 0 0 1 14 0"/><path d="M8.5 15.8a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1"/><path d="M3 3l18 18"/></svg>
+  <h1>Can't reach NexURLs</h1>
+  <p>Check your connection, or try again in a moment.</p>
+  <button type="button" id="again">Try again</button>
+</main>
+<script>
+  document.getElementById('again').addEventListener('click', function () {
+    try { if (window.Capacitor && Capacitor.nativePromise) Capacitor.nativePromise('NexApp', 'haptic', { style: 'light' }).catch(function () {}); } catch (e) {}
+    location.href = 'https://nexurls.com/app/';
+  });
+</script>
+</body>
+</html>

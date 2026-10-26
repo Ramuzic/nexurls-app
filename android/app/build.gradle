@@ -42,6 +42,8 @@ dependencies {
     implementation project(':capacitor-cordova-android-plugins')
     // Push notifications (the same OneSignal app the website uses).
     implementation 'com.onesignal:OneSignal:[5.1.6, 5.99.99]'
+    // The "rate this app" sheet.
+    implementation 'com.google.android.play:review:2.0.2'
 }
 
 apply from: 'capacitor.build.gradle'

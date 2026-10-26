@@ -75,6 +75,22 @@ public class MainActivity extends BridgeActivity {
             pendingUrl = null;
             openUrl(u);
         }
+        openFromIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        openFromIntent(intent);
+    }
+
+    /** A nexurls.com link tapped in another app, or a home screen quick action. */
+    private void openFromIntent(Intent intent) {
+        if (intent == null || !Intent.ACTION_VIEW.equals(intent.getAction()) || intent.getData() == null) return;
+        String url = intent.getData().toString();
+        if (!cfg.isOwn(url)) return;
+        setIntent(new Intent(this, MainActivity.class));
+        openUrl(url);
     }
 
     @Override

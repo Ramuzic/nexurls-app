@@ -2,6 +2,7 @@ import UIKit
 import Capacitor
 import StoreKit
 import AuthenticationServices
+import UserNotifications
 #if canImport(OneSignalFramework)
 import OneSignalFramework
 #endif
@@ -25,7 +26,10 @@ public class NexAppPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "iapRestore", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "iapFinish", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "iapManage", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "appleSignIn", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "appleSignIn", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setBadge", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setRefresh", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "requestReview", returnType: CAPPluginReturnPromise)
     ]
 
     private var updatesTask: Task<Void, Never>?
@@ -218,6 +222,42 @@ public class NexAppPlugin: CAPPlugin, CAPBridgedPlugin {
     @objc public func info(_ call: CAPPluginCall) {
         let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
         call.resolve(["platform": "ios", "version": v])
+    }
+
+    /// The unread alerts count on the app icon: { count: 3 }. 0 clears it.
+    @objc public func setBadge(_ call: CAPPluginCall) {
+        let n = max(0, call.getInt("count") ?? 0)
+        DispatchQueue.main.async {
+            if #available(iOS 16.0, *) {
+                UNUserNotificationCenter.current().setBadgeCount(n) { _ in }
+            } else {
+                UIApplication.shared.applicationIconBadgeNumber = n
+            }
+            call.resolve()
+        }
+    }
+
+    /// Pull to refresh on or off: { on: false } on Reels, full screen and pop-ups.
+    @objc public func setRefresh(_ call: CAPPluginCall) {
+        let on = call.getBool("on") ?? true
+        DispatchQueue.main.async {
+            (self.bridge?.viewController?.parent as? RootViewController)?.setRefreshEnabled(on)
+            call.resolve()
+        }
+    }
+
+    /// Asks iOS to show the "rate this app" box. iOS decides whether it really shows (at most a few times a year).
+    @objc public func requestReview(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            if let scene = self.bridge?.viewController?.view.window?.windowScene {
+                if #available(iOS 16.0, *) {
+                    AppStore.requestReview(in: scene)
+                } else {
+                    SKStoreReviewController.requestReview(in: scene)
+                }
+            }
+            call.resolve()
+        }
     }
 }
 

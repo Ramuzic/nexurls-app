@@ -4,4 +4,7 @@
     <string name="title_activity_main">NexURLs</string>
     <string name="package_name">com.nexurls.app</string>
     <string name="custom_url_scheme">com.nexurls.app</string>
+    <string name="sc_next">Take me somewhere</string>
+    <string name="sc_submit">Submit a link</string>
+    <string name="sc_saved">Saved</string>
 </resources>

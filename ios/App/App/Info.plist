@@ -24,6 +24,35 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.nexurls.app.next</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Take me somewhere</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>safari</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.nexurls.app.submit</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Submit a link</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>plus.circle</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.nexurls.app.saved</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Saved</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>bookmark</string>
+		</dict>
+	</array>
+	<key>OneSignal_disable_badge_clearing</key>
+	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>NexURLs uses the camera so you can record short video reactions to links and add photos to your posts.</string>
 	<key>NSMicrophoneUsageDescription</key>

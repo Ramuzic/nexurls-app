@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="next"
+        android:enabled="true"
+        android:icon="@drawable/ic_tab_next"
+        android:shortcutShortLabel="@string/sc_next"
+        android:shortcutLongLabel="@string/sc_next">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.nexurls.app"
+            android:targetClass="com.nexurls.app.MainActivity"
+            android:data="https://nexurls.com/?go=1" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="submit"
+        android:enabled="true"
+        android:icon="@drawable/ic_tab_share"
+        android:shortcutShortLabel="@string/sc_submit"
+        android:shortcutLongLabel="@string/sc_submit">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.nexurls.app"
+            android:targetClass="com.nexurls.app.MainActivity"
+            android:data="https://nexurls.com/submit-a-url/" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="saved"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_saved"
+        android:shortcutShortLabel="@string/sc_saved"
+        android:shortcutLongLabel="@string/sc_saved">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.nexurls.app"
+            android:targetClass="com.nexurls.app.MainActivity"
+            android:data="https://nexurls.com/saved/" />
+    </shortcut>
+</shortcuts>

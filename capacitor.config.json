@@ -8,7 +8,8 @@
     "allowNavigation": [
       "nexurls.com",
       "*.nexurls.com"
-    ]
+    ],
+    "errorPath": "offline.html"
   },
   "appendUserAgent": "NexURLsApp/1.0",
   "backgroundColor": "#F4F0E8",

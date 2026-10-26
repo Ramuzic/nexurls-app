@@ -86,7 +86,7 @@ class RootViewController: UIViewController, UITabBarDelegate {
         watchNetwork()
 
         NotificationCenter.default.addObserver(forName: .nexAppOpenURL, object: nil, queue: .main) { [weak self] note in
-            if let u = note.object as? URL { self?.open(u) }
+            if let u = note.object as? URL { RootViewController.pendingURL = nil; self?.open(u) }
         }
 
         // The keyboard: the page shrinks to fit above it, like a native screen,
@@ -352,7 +352,7 @@ class RootViewController: UIViewController, UITabBarDelegate {
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 // A new page always starts with the tabs showing.
-                if w.isLoading { self.setTabBarHidden(false); return }
+                if w.isLoading { self.setTabBarHidden(false); self.setRefreshEnabled(true); return }
                 self.refresh.endRefreshing()
                 self.syncTab(w.url)
                 self.finishBoot()
@@ -367,11 +367,25 @@ class RootViewController: UIViewController, UITabBarDelegate {
     }
 
     @objc private func pullToRefresh() {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         bridgeVC.webView?.reload()
         DispatchQueue.main.asyncAfter(deadline: .now() + 8) { [weak self] in self?.refresh.endRefreshing() }
     }
 
-    /// Opens a link from a notification. Links to the site stay in the app; others go to Safari.
+    /// Pull to refresh on or off. The site turns it off where a pull means something else
+    /// (Reels, a website open full screen, the galaxy, pop-ups) and every new page starts with it on.
+    func setRefreshEnabled(_ on: Bool) {
+        guard let web = bridgeVC.webView else { return }
+        if on {
+            if web.scrollView.refreshControl == nil { web.scrollView.refreshControl = refresh }
+        } else {
+            refresh.endRefreshing()
+            web.scrollView.refreshControl = nil
+        }
+    }
+
+    /// Opens a link from a notification, a home screen quick action or a nexurls.com link
+    /// tapped in another app. Links to the site stay in the app; others go to Safari.
     func open(_ url: URL) {
         if config.isOwn(url) {
             bridgeVC.webView?.load(URLRequest(url: url))

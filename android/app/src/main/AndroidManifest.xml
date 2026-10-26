@@ -20,6 +20,16 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- nexurls.com links open in the app (verified with /.well-known/assetlinks.json on the site). -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="nexurls.com" />
+                <data android:scheme="https" android:host="www.nexurls.com" />
+            </intent-filter>
+            <!-- Press and hold the app icon: Take me somewhere, Submit a link, Saved. -->
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
 
         <activity

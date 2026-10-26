@@ -88,6 +88,31 @@ public class NexAppPlugin extends Plugin {
         });
     }
 
+    /** Android launchers show their own notification dots, so the count is not set by hand. */
+    @PluginMethod
+    public void setBadge(PluginCall call) { call.resolve(); }
+
+    /** Pull to refresh is handled by the page itself on Android. */
+    @PluginMethod
+    public void setRefresh(PluginCall call) { call.resolve(); }
+
+    /** Google Play's own "rate this app" sheet. Play decides whether it really shows. */
+    @PluginMethod
+    public void requestReview(PluginCall call) {
+        try {
+            com.google.android.play.core.review.ReviewManager m = com.google.android.play.core.review.ReviewManagerFactory.create(getContext());
+            m.requestReviewFlow().addOnCompleteListener(task -> {
+                if (task.isSuccessful() && getActivity() != null) {
+                    m.launchReviewFlow(getActivity(), task.getResult()).addOnCompleteListener(done -> call.resolve());
+                } else {
+                    call.resolve();
+                }
+            });
+        } catch (Exception e) {
+            call.resolve();
+        }
+    }
+
     @PluginMethod
     public void info(PluginCall call) {
         JSObject r = new JSObject();
