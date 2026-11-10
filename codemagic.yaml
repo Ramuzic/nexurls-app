@@ -53,3 +53,64 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
+
+  # ---------------------------------------------------------------------------
+  # Android (Google Play). Two workflows:
+  #
+  # android-upload-key: run ONCE. Makes the Play upload key on Codemagic's machine and
+  #   leaves it in that build's Artifacts: nexurls-upload.jks and nexurls-upload-key.txt
+  #   (the passwords and alias). Download both and keep them somewhere safe (a password
+  #   manager). Then Codemagic > Team settings > Code signing identities > Android
+  #   keystores > Add: upload nexurls-upload.jks, type the details from the .txt file,
+  #   and name the reference exactly: nexurls_upload. Nothing secret goes in this file.
+  #   Google Play App Signing holds the real app key, so a lost upload key can be reset
+  #   in Play Console.
+  #
+  # android-play: builds the signed Android App Bundle (.aab) for Google Play. The first
+  #   upload is done by hand in Play Console (Test and release > create a release > upload
+  #   the .aab from this build's Artifacts). Automatic uploads can be added after that.
+  # ---------------------------------------------------------------------------
+  android-upload-key:
+    name: Android upload key (run once)
+    max_build_duration: 10
+    instance_type: linux_x2
+    scripts:
+      - name: Make the upload key
+        script: |
+          set -e
+          mkdir -p out
+          PASS=$(openssl rand -base64 30 | tr -dc 'A-Za-z0-9' | head -c 28)
+          keytool -genkeypair -v \
+            -keystore out/nexurls-upload.jks \
+            -storetype JKS \
+            -alias nexurls-upload \
+            -keyalg RSA -keysize 4096 -validity 10000 \
+            -storepass "$PASS" -keypass "$PASS" \
+            -dname "CN=NexURLs, O=Qubi Labs LLC, C=US"
+          printf "Keystore file: nexurls-upload.jks\nKeystore password: %s\nKey alias: nexurls-upload\nKey password: %s\n" "$PASS" "$PASS" > out/nexurls-upload-key.txt
+    artifacts:
+      - out/nexurls-upload.jks
+      - out/nexurls-upload-key.txt
+
+  android-play:
+    name: Android for Google Play
+    max_build_duration: 45
+    instance_type: linux_x2
+    environment:
+      node: 22
+      java: 21
+      android_signing:
+        - nexurls_upload
+    scripts:
+      - name: Install packages
+        script: npm ci
+      - name: Copy the web settings into the Android project
+        script: npx cap sync android
+      - name: Build the signed app bundle
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew bundleRelease
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
+      - android/app/build/outputs/**/mapping.txt

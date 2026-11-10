@@ -188,6 +188,21 @@ public class MainActivity extends BridgeActivity {
         tabBar.setVisibility(typing || tabHidden ? View.GONE : View.VISIBLE);
     }
 
+    /** A red count on the tab with this action (1.1.3: unread chat messages on the Chat tab). 0 clears it. */
+    void setTabBadge(String action, int count) {
+        for (int i = 0; i < tabViews.size() && i < cfg.tabs.size(); i++) {
+            if (action == null || !action.equals(cfg.tabs.get(i).action)) continue;
+            TextView b = (TextView) tabViews.get(i).findViewWithTag("badge");
+            if (b == null) continue;
+            if (count > 0) {
+                b.setText(count > 99 ? "99+" : String.valueOf(count));
+                b.setVisibility(View.VISIBLE);
+            } else {
+                b.setVisibility(View.GONE);
+            }
+        }
+    }
+
     /** Dark icons on the light top bar; light gesture bar over the dark tab bar. */
     private void applyBarColors() {
         WindowInsetsControllerCompat c = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
@@ -213,9 +228,28 @@ public class MainActivity extends BridgeActivity {
             item.setBackgroundResource(ripple.resourceId);
             item.setContentDescription(t.label);
 
+            // The icon, with a small red count over its corner (the Chat tab shows unread messages).
+            FrameLayout iconBox = new FrameLayout(this);
+            iconBox.setClipChildren(false);
             ImageView icon = new ImageView(this);
+            icon.setTag("icon");
             icon.setImageResource(AppConfig.icon(t.icon));
-            item.addView(icon, new LinearLayout.LayoutParams(dp(24), dp(24)));
+            iconBox.addView(icon, new FrameLayout.LayoutParams(dp(24), dp(24), Gravity.CENTER));
+            TextView badge = new TextView(this);
+            badge.setTag("badge");
+            badge.setTextColor(0xFFFFFFFF);
+            badge.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f);
+            badge.setTypeface(Typeface.DEFAULT_BOLD);
+            badge.setGravity(Gravity.CENTER);
+            badge.setMinWidth(dp(16));
+            badge.setPadding(dp(4), 0, dp(4), 0);
+            GradientDrawable pill = new GradientDrawable();
+            pill.setColor(0xFFEF4444);
+            pill.setCornerRadius(dp(8));
+            badge.setBackground(pill);
+            badge.setVisibility(View.GONE);
+            iconBox.addView(badge, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(16), Gravity.TOP | Gravity.END));
+            item.addView(iconBox, new LinearLayout.LayoutParams(dp(44), dp(24)));
 
             TextView label = new TextView(this);
             label.setText(t.label);
@@ -238,7 +272,7 @@ public class MainActivity extends BridgeActivity {
         for (int i = 0; i < tabViews.size(); i++) {
             LinearLayout item = tabViews.get(i);
             int col = i == selected ? cfg.active : cfg.inactive;
-            ((ImageView) item.getChildAt(0)).setImageTintList(ColorStateList.valueOf(col));
+            ((ImageView) item.findViewWithTag("icon")).setImageTintList(ColorStateList.valueOf(col));
             TextView label = (TextView) item.getChildAt(1);
             label.setTextColor(col);
             label.setTypeface(Typeface.DEFAULT, i == selected ? Typeface.BOLD : Typeface.NORMAL);
