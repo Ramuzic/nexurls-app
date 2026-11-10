@@ -161,6 +161,15 @@ class RootViewController: UIViewController, UITabBarDelegate {
         applyTabBar(hidden)
     }
 
+    /// A red count on the tab with this action (the Chat tab shows unread messages). 0 clears it.
+    func setTabBadge(action: String, count: Int) {
+        guard let items = tabBar.items else { return }
+        for (i, t) in config.tabs.enumerated() where t.action == action && i < items.count {
+            items[i].badgeValue = count > 0 ? (count > 99 ? "99+" : String(count)) : nil
+            items[i].badgeColor = UIColor(red: 0.94, green: 0.27, blue: 0.27, alpha: 1)
+        }
+    }
+
     /// First page loaded: wait for the splash screen to finish, then fade the tabs in.
     private func finishBoot() {
         if !booting { return }
