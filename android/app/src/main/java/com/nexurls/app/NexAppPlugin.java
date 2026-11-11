@@ -56,27 +56,121 @@ public class NexAppPlugin extends Plugin {
         });
     }
 
-    /** Apple in-app purchases and Sign in with Apple are iPhone only; Android keeps the website checkout. */
-    @PluginMethod
-    public void iapProducts(PluginCall call) { call.reject("Not available on Android"); }
+    /* ------------------------------------------------------------------ */
+    /* Google Play purchases (1.1.3). The site checks every purchase with  */
+    /* Google before it gives anything, the same way it checks Apple's.    */
+    /* ------------------------------------------------------------------ */
 
-    @PluginMethod
-    public void iapBuy(PluginCall call) { call.reject("Not available on Android"); }
+    private PlayStore store;
 
-    @PluginMethod
-    public void iapPending(PluginCall call) { JSObject r = new JSObject(); r.put("items", new com.getcapacitor.JSArray()); call.resolve(r); }
+    private PlayStore store() {
+        if (store == null) store = new PlayStore(getActivity());
+        return store;
+    }
 
+    /** Prices in the buyer's own currency: { ids: [...] } gives { products: [{ id, price }] }. */
     @PluginMethod
-    public void iapRestore(PluginCall call) { JSObject r = new JSObject(); r.put("items", new com.getcapacitor.JSArray()); call.resolve(r); }
+    public void iapProducts(PluginCall call) {
+        java.util.List<String> ids = new java.util.ArrayList<>();
+        try {
+            com.getcapacitor.JSArray a = call.getArray("ids");
+            if (a != null) for (int i = 0; i < a.length(); i++) ids.add(a.getString(i));
+        } catch (Exception ignored) {}
+        store().products(ids, call);
+    }
 
+    /** { id, token } where token is the member's purchase id from the site. */
     @PluginMethod
-    public void iapFinish(PluginCall call) { call.resolve(); }
+    public void iapBuy(PluginCall call) {
+        store().buy(call.getString("id", ""), call.getString("token", ""), call);
+    }
 
+    /** Purchases the site has not handled yet (interrupted purchases, pending payments that went through). */
     @PluginMethod
-    public void iapManage(PluginCall call) { call.resolve(); }
+    public void iapPending(PluginCall call) { store().owned(true, call); }
+
+    /** Everything this Google account owns, to restore on a new phone. */
+    @PluginMethod
+    public void iapRestore(PluginCall call) { store().owned(false, call); }
+
+    /** After the site has added it: { purchaseToken, consume } (consume for NexCredit packs). */
+    @PluginMethod
+    public void iapFinish(PluginCall call) {
+        store().finish(call.getString("purchaseToken", ""), Boolean.TRUE.equals(call.getBoolean("consume", false)), call);
+    }
+
+    /** Google Play's subscriptions page for this app. */
+    @PluginMethod
+    public void iapManage(PluginCall call) {
+        try {
+            String sku = call.getString("id", "");
+            String url = "https://play.google.com/store/account/subscriptions?package=" + getContext().getPackageName()
+                + (sku == null || sku.isEmpty() ? "" : "&sku=" + sku);
+            android.content.Intent i = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url));
+            i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(i);
+        } catch (Exception ignored) {}
+        call.resolve();
+    }
 
     @PluginMethod
     public void appleSignIn(PluginCall call) { call.reject("Not available on Android"); }
+
+    /**
+     * Continue with Google (1.1.3). Google does not allow its sign-in page inside apps, so the
+     * app signs in natively and hands the site Google's signed ID token: { clientId } gives
+     * { idToken } or { cancelled: true }. clientId is the site's public Google web client ID.
+     */
+    @PluginMethod
+    public void googleSignIn(PluginCall call) {
+        String clientId = call.getString("clientId", "");
+        if (clientId == null || clientId.isEmpty()) { call.reject("Google sign-in is not set up yet."); return; }
+        try {
+            com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption opt =
+                new com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption.Builder(clientId).build();
+            androidx.credentials.GetCredentialRequest req = new androidx.credentials.GetCredentialRequest.Builder()
+                .addCredentialOption(opt).build();
+            androidx.credentials.CredentialManager cm = androidx.credentials.CredentialManager.Companion.create(getContext());
+            cm.getCredentialAsync(getActivity(), req, new android.os.CancellationSignal(),
+                androidx.core.content.ContextCompat.getMainExecutor(getContext()),
+                new androidx.credentials.CredentialManagerCallback<androidx.credentials.GetCredentialResponse, androidx.credentials.exceptions.GetCredentialException>() {
+                    @Override
+                    public void onResult(androidx.credentials.GetCredentialResponse res) {
+                        androidx.credentials.Credential c = res.getCredential();
+                        if (c instanceof androidx.credentials.CustomCredential
+                            && com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(c.getType())) {
+                            try {
+                                com.google.android.libraries.identity.googleid.GoogleIdTokenCredential g =
+                                    com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.createFrom(c.getData());
+                                JSObject r = new JSObject();
+                                r.put("idToken", g.getIdToken());
+                                r.put("givenName", g.getGivenName() == null ? "" : g.getGivenName());
+                                r.put("familyName", g.getFamilyName() == null ? "" : g.getFamilyName());
+                                call.resolve(r);
+                                return;
+                            } catch (Exception e) {
+                                call.reject("Google sign-in did not work. Please try again.");
+                                return;
+                            }
+                        }
+                        call.reject("Google sign-in did not work. Please try again.");
+                    }
+
+                    @Override
+                    public void onError(androidx.credentials.exceptions.GetCredentialException e) {
+                        if (e instanceof androidx.credentials.exceptions.GetCredentialCancellationException) {
+                            JSObject r = new JSObject();
+                            r.put("cancelled", true);
+                            call.resolve(r);
+                        } else {
+                            call.reject("Google sign-in did not work. Please try again.");
+                        }
+                    }
+                });
+        } catch (Exception e) {
+            call.reject("Google sign-in did not work. Please try again.");
+        }
+    }
 
     /** The site hides the tabs while a website is open full screen: { hidden: true }. */
     @PluginMethod
