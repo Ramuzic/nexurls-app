@@ -73,7 +73,7 @@ workflows:
   android-upload-key:
     name: Android upload key (run once)
     max_build_duration: 10
-    instance_type: linux_x2
+    instance_type: mac_mini_m2
     scripts:
       - name: Make the upload key
         script: |
@@ -95,7 +95,7 @@ workflows:
   android-play:
     name: Android for Google Play
     max_build_duration: 45
-    instance_type: linux_x2
+    instance_type: mac_mini_m2
     environment:
       node: 22
       java: 21
